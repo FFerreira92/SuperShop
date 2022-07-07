@@ -7,33 +7,36 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SuperShop.Data;
 using SuperShop.Data.Entities;
+using SuperShop.Helpers;
 
 namespace SuperShop.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly IRepository _repository;
+        private readonly IProductsRepository _repository;
+        private readonly IUserHelper _userHelper;
 
-        public ProductsController(IRepository repository)
+        public ProductsController(IProductsRepository repository,IUserHelper userHelper)
         {
             _repository = repository;
+            _userHelper = userHelper;
         }
 
         // GET: Products
         public IActionResult Index()
         {
-            return View(_repository.GetProducts());
+            return View(_repository.GetAll().OrderBy(p => p.Name));
         }
 
         // GET: Products/Details/5
-        public IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = _repository.GetProduct(id.Value);
+            var product = await _repository.GetByIdAsync(id.Value);
 
             if (product == null)
             {
@@ -58,22 +61,23 @@ namespace SuperShop.Controllers
         {
             if (ModelState.IsValid)
             {
-                _repository.AddProduct(product);
-                await _repository.SaveAllAsync();
+                //TO DO: Modificar para o user que estiver logado
+                product.User = await _userHelper.GetUserByEmailAsync("f92ferreira@gmail.com");
+                await _repository.CreateAsync(product);                
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
         }
 
         // GET: Products/Edit/5
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = _repository.GetProduct(id.Value);
+            var product = await _repository.GetByIdAsync(id.Value);
 
             if (product == null)
             {
@@ -98,12 +102,13 @@ namespace SuperShop.Controllers
             {
                 try
                 {
-                    _repository.UpdateProduct(product);
-                    await _repository.SaveAllAsync();
+                    product.User = await _userHelper.GetUserByEmailAsync("f92ferreira@gmail.com");
+                    await _repository.UpdateAsync(product);
+                    
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_repository.ProductExists(product.Id))
+                    if (! await _repository.ExistAsync(product.Id))
                     {
                         return NotFound();
                     }
@@ -118,14 +123,14 @@ namespace SuperShop.Controllers
         }
 
         // GET: Products/Delete/5
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = _repository.GetProduct(id.Value);
+            var product = await _repository.GetByIdAsync(id.Value);
 
             if (product == null)
             {
@@ -140,9 +145,8 @@ namespace SuperShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = _repository.GetProduct(id);
-            _repository.RemoveProduct(product);
-            await _repository.SaveAllAsync();
+            var product = await _repository.GetByIdAsync(id);
+            await _repository.DeleteAsync(product);        
             return RedirectToAction(nameof(Index));
         }
 
