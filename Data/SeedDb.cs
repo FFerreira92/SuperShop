@@ -26,6 +26,7 @@ namespace SuperShop.Data
             await _context.Database.EnsureCreatedAsync();
 
             var user = await _userHelper.GetUserByEmailAsync("f92ferreira@gmail.com");
+            
             if (user == null)
             {
                 user = new User
@@ -38,6 +39,7 @@ namespace SuperShop.Data
                 };
 
                 var result = await _userHelper.AddUserAsync(user,"Cinel123");
+                
                 if (result != IdentityResult.Success)
                 {
                     throw new InvalidOperationException("Could not create the user in seeder");

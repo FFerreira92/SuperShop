@@ -18,14 +18,14 @@ namespace SuperShop.Controllers
     {
         private readonly IProductsRepository _repository;
         private readonly IUserHelper _userHelper;
-        private readonly IImageHelper _imageHelper;
+        private readonly IBlobHelper _blobHelper;
         private readonly IConverterHelper _converterHelper;
 
-        public ProductsController(IProductsRepository repository,IUserHelper userHelper,IImageHelper imageHelper,IConverterHelper converterHelper)
+        public ProductsController(IProductsRepository repository,IUserHelper userHelper,IBlobHelper blobHelper,IConverterHelper converterHelper)
         {
             _repository = repository;
             _userHelper = userHelper;
-            _imageHelper = imageHelper;
+            _blobHelper = blobHelper;
             _converterHelper = converterHelper;
         }
 
@@ -68,14 +68,15 @@ namespace SuperShop.Controllers
         {
             if (ModelState.IsValid)
             {
-                var path = string.Empty;
+                Guid imageId = Guid.Empty;
 
                 if (model.ImageFile != null && model.ImageFile.Length > 0)
                 {
-                    path = await _imageHelper.UploadImageAsync(model.ImageFile, "products");
+                    imageId = await _blobHelper.UploadBlobAsync(model.ImageFile,"products");
+                       
                 }
 
-                var product = _converterHelper.toProduct(model,path,true);
+                var product = _converterHelper.toProduct(model,imageId,true);
 
                 //TO DO: Modificar para o user que estiver logado
                 product.User = await _userHelper.GetUserByEmailAsync("f92ferreira@gmail.com");
@@ -118,14 +119,14 @@ namespace SuperShop.Controllers
                 try
                 {
 
-                    var path = model.ImageUrl;
+                    var imageId = model.ImageId;
 
                     if (model.ImageFile != null && model.ImageFile.Length > 0)
                     {
-                        path = await _imageHelper.UploadImageAsync(model.ImageFile, "products");
+                        imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "products");
                     }
 
-                    var product = _converterHelper.toProduct(model, path, false);
+                    var product = _converterHelper.toProduct(model, imageId, false);
 
                     product.User = await _userHelper.GetUserByEmailAsync("f92ferreira@gmail.com");
                     await _repository.UpdateAsync(product);

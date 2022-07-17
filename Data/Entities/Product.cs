@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using static System.Net.WebRequestMethods;
 
 namespace SuperShop.Data.Entities
 {
@@ -21,7 +22,7 @@ namespace SuperShop.Data.Entities
 
 
         [Display(Name = "Image")] // Define o nome do campo que vai surgir na página Web para esta respetiva Propriedade (só visual)
-        public string ImageUrl { get; set; }
+        public Guid ImageId { get; set; }
 
 
 
@@ -46,17 +47,13 @@ namespace SuperShop.Data.Entities
 
         public User User { get; set; }
 
-        public string ImageFullPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(ImageUrl))
-                {
-                    return null;
-                }
+        public string ImageFullPath => ImageId == Guid.Empty
+            ? $"https://supershoptpsi.azurewebsites.net/images/products/noImage.png"
+            : $"https://supershoptpsi.blob.core.windows.net/products/{ImageId}";
 
-                return $"https://localhost:44314{ImageUrl.Substring(1)}";
-            }
-        }
+
+
+
+
     }
 }
