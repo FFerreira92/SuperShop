@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -14,6 +15,7 @@ using SuperShop.Models;
 
 namespace SuperShop.Controllers
 {
+    [Authorize(Roles ="Admin")]
     public class ProductsController : Controller
     {
         private readonly IProductsRepository _repository;
@@ -175,6 +177,12 @@ namespace SuperShop.Controllers
             await _repository.DeleteAsync(product);        
             return RedirectToAction(nameof(Index));
         }
+
+        public IActionResult ProductNotFound()
+        {
+            return View();
+        }
+
 
     }
 }
