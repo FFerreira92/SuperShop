@@ -88,5 +88,17 @@ namespace SuperShop.Controllers
             return RedirectToAction("Create");
         }
 
+        public async Task<IActionResult> ConfirmOrder()
+        {
+            var response = await _orderRepository.ConfirmOrderAsync(this.User.Identity.Name);
+
+            if (response)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return RedirectToAction("Create");
+        }
+
     }
 }
