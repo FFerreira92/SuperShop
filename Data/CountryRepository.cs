@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using SuperShop.Data.Entities;
 using SuperShop.Models;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -46,6 +48,47 @@ namespace SuperShop.Data
         public async Task<City> GetCityAsync(int id)
         {
             return await _context.Cities.FindAsync(id);
+        }
+
+        public IEnumerable<SelectListItem> GetComboCities(int countryId)
+        {
+
+            var country = _context.Countries.Find(countryId);
+            var list = new List<SelectListItem>();
+
+            if(country != null)
+            {
+                list = _context.Cities.Select(c => new SelectListItem
+                {
+                    Text = c.Name,
+                    Value = c.Id.ToString()
+                }).OrderBy(l => l.Text).ToList();
+
+                list.Insert(0, new SelectListItem
+                {
+                    Text = "(Select a Country)",
+                    Value = "0"
+                });
+            }          
+     
+            return list;
+        }
+
+        public IEnumerable<SelectListItem> GetComboCountries()
+        {
+            var list = _context.Countries.Select(c => new SelectListItem
+            {
+                Text = c.Name,
+                Value = c.Id.ToString()
+            }).OrderBy(l => l.Text).ToList();
+
+            list.Insert(0, new SelectListItem
+            {
+                Text = "(Select a Country)",
+                Value = "0"
+            });
+
+            return list;
         }
 
         public IQueryable GetCountriesWithCities()
