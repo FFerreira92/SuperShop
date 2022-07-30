@@ -174,8 +174,26 @@ namespace SuperShop.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _repository.GetByIdAsync(id);
-            await _repository.DeleteAsync(product);        
-            return RedirectToAction(nameof(Index));
+
+            try
+            {
+                await _repository.DeleteAsync(product);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException ex)
+            {
+
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("DELETE"))
+                {
+                    ViewBag.ErrorTitle = $"{product.Name} is being used.";
+                    ViewBag.ErrorMessage = $"{product.Name} cannot be deleted because there is orders using it.</br></br>"
+                        + $"Try deleting orders that are using the item and try again.";
+
+                }
+
+                return View("Error");
+            }                          
+            
         }
 
         public IActionResult ProductNotFound()
